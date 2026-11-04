@@ -27,7 +27,18 @@ jobs:
       - name: Test source application on Windows
         run: npm run test:e2e
       - name: Build Windows x64 NSIS installer
-        run: npm run dist:win
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          npm run dist:win 2>&1 | Tee-Object -FilePath windows-build.log
+          $buildExitCode = $LASTEXITCODE
+          if ($buildExitCode -ne 0) {
+            '### Windows installer build failure' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            '```text' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            Get-Content windows-build.log -Tail 80 | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          }
+          exit $buildExitCode
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
       - name: Verify packaged x64 FFmpeg and FFprobe
@@ -58,4 +69,5 @@ jobs:
             test-results/
             .local/output.mp4
             release/builder-effective-config.yaml
+            windows-build.log
           if-no-files-found: warn
