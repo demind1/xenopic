@@ -9,25 +9,47 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npx playwright install chromium
-      - run: npm run test:e2e
-      - run: npm run dist:win
+      - name: Install pinned dependencies and Electron
+        run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Install browser for UI tests
+        run: npx playwright install chromium
+      - name: Test source application on Windows
+        run: npm run test:e2e
+      - name: Build Windows x64 NSIS installer
+        run: npm run dist:win
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Verify packaged x64 FFmpeg and FFprobe
+        run: node scripts/verify-windows-package.mjs
+      - name: Install NSIS package silently on Windows
+        shell: pwsh
+        run: ./scripts/windows-installer.ps1 -Action Install
+      - name: Test installed application and real MP4 export
+        run: npx playwright test --project=desktop --output=test-results/installed
+      - name: Uninstall NSIS package
+        if: always()
+        shell: pwsh
+        run: ./scripts/windows-installer.ps1 -Action Uninstall
       - uses: actions/upload-artifact@v4
         with:
           name: NIGHTFRAME-Windows-x64-unsigned
-          path: release/*.exe
+          path: |
+            release/*.exe
+            release/*.sha256
           if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -35,3 +57,5 @@ jobs:
           path: |
             test-results/
             .local/output.mp4
+            release/builder-effective-config.yaml
+          if-no-files-found: warn
