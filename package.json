@@ -1,0 +1,96 @@
+{
+  "name": "nightframe-studio",
+  "version": "0.1.0",
+  "description": "Offline music video editor",
+  "author": "NIGHTFRAME contributors",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build && node scripts/build-electron.mjs && node scripts/notices.mjs",
+    "desktop": "npm run build && electron .",
+    "desktop:dev": "npm run build && electron . --dev",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "dist:win": "npm run build && electron-builder --win nsis --x64",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:cloud": "bash scripts/cloud-check.sh",
+    "postinstall": "node scripts/install-runtime.mjs"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "electron": "^45.2.2",
+    "electron-builder": "^26.0.0",
+    "esbuild": "^0.25.0",
+    "prettier": "^3.9.10",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.0",
+    "undici": "^7.30.1",
+    "vite": "^6.3.0",
+    "vitest": "^3.1.0"
+  },
+  "build": {
+    "appId": "studio.nightframe.editor",
+    "productName": "NIGHTFRAME Studio",
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**",
+      "node_modules/ffprobe-static/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "files": [
+        "!node_modules/ffprobe-static/bin/darwin/**",
+        "!node_modules/ffprobe-static/bin/linux/**",
+        "!node_modules/ffprobe-static/bin/win32/ia32/**"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "directories": {
+      "output": "release"
+    },
+    "extraResources": [
+      {
+        "from": "dist-notices",
+        "to": "notices"
+      }
+    ],
+    "linux": {
+      "files": [
+        "!node_modules/ffprobe-static/bin/darwin/**",
+        "!node_modules/ffprobe-static/bin/win32/**",
+        "!node_modules/ffprobe-static/bin/linux/ia32/**"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=22.12 <25"
+  }
+}

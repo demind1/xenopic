@@ -1,0 +1,3 @@
+# NIGHTFRAME Studio
+
+Use the existing checkout; do not create worktrees unless requested. Run `npm ci`, `npm test`, `npm run build`, and relevant Playwright checks after changes. Keep TypeScript strict. Never add decorative controls that imply unimplemented features. Keep preview and export on the same canvas composition engine. All timeline edits must be nondestructive and undoable. Validate projects and IPC in main; renderer has no Node access. Never accept executable paths or shell commands from renderer. Do not disable TLS, checksum verification, or Electron security. Document known limits; a Linux build is not a tested Windows installer. Preserve original assets and licenses. Never commit media caches or generated builds.
